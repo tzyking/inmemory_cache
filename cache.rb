@@ -12,9 +12,7 @@ class Cache
 
   def add(key, value)
     if @data_set.length == @size && !@data_set.has_key?(key)
-      # p key
       evictable_key = eviction(@data_set.keys)
-      # p evictable_key
       @data_set.delete(evictable_key)
     end
 
