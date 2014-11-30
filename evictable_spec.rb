@@ -15,10 +15,12 @@ describe Evictable do
   let(:item1) { ListNode.new('k1', 'v1') }
   let(:item2) { ListNode.new('k2', 'v2') }
   
-  context 'set_up_list' do  
+  describe '#set_up_list' do  
     it 'set up instance variable eviction_strategy with random eviction strategy' do
       @dummy.set_up_list(:random)
+      actual_key_set = @dummy.instance_variable_get(:@key_set)
       expect(@dummy.instance_variable_get(:@eviction_strategy)).to eq(:random)
+      expect(actual_key_set).to eq(Array.new)
     end
 
     it 'set up instance variables with lru eviction strategy' do
@@ -32,7 +34,7 @@ describe Evictable do
     end
   end
 
-  context 'push_list' do 
+  describe '#push_list' do 
     it 'creates new node and push to the list with lru eviction strategy' do 
       @dummy.set_up_list(:lru)
       @dummy.push_list('k1', 'v1')
@@ -92,10 +94,23 @@ describe Evictable do
       
       expect(actual_tail.pre_node).to eq(actual_item2)
     end
+
+    it 'pushs key to key_set with random eviction strategy' do 
+      @dummy.set_up_list(:random)
+      @dummy.push_list('k1', 'v1')
+      @dummy.push_list('k2', 'v2')
+      @dummy.push_list('k3', 'v3')
+      @dummy.push_list('k3', 'updated_v3')
+
+      actual_key_set = @dummy.instance_variable_get(:@key_set)
+      expeced_key_set = ['k1', 'k2', 'k3']
+      
+      expect(actual_key_set).to eq(expeced_key_set)
+    end
   end
 
-  context 'eviction' do 
-    let(:key_list) { ['k1', 'k2', 'k3','k4','k5'] } 
+  describe '#eviction' do 
+    let(:original_key_set) { ['k1', 'k2', 'k3', 'k4', 'k5'] }
 
     it 'evicts last node of list with lru eviction strategy' do 
       @dummy.set_up_list(:lru)
@@ -122,11 +137,20 @@ describe Evictable do
 
     it 'returns randome key from input key list with random eviction strategy' do
       @dummy.set_up_list(:random)
-      expect(key_list).to include(@dummy.eviction(key_list))
+      @dummy.push_list('k1', 'v1')
+      @dummy.push_list('k2', 'v2')
+      @dummy.push_list('k3', 'v3')
+      @dummy.push_list('k4', 'v4')
+      @dummy.push_list('k5', 'v5')
+      actual_evictable_key = @dummy.eviction
+      actual_key_set = @dummy.instance_variable_get(:@key_set)
+
+      expect(original_key_set).to include(actual_evictable_key)
+      expect(original_key_set).to include(*actual_key_set)
     end
   end
 
-  context 'update_list' do 
+  describe '#update_list' do 
     it 'updates position of node in list with lru eviction strategy' do 
       @dummy.set_up_list(:lru)
       @dummy.push_list('k1', 'v1')

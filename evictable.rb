@@ -11,9 +11,13 @@ module Evictable
       @head.next_node = @tail
       @tail.pre_node = @head
     end
+
+    if @eviction_strategy == :random
+      @key_set = Array.new
+    end
   end
 
-  def eviction(keys = nil) 
+  def eviction 
     if @eviction_strategy == :lru
       evictable_node = @tail.pre_node
       remove(evictable_node)
@@ -21,7 +25,10 @@ module Evictable
       return evictable_node.key
     end
     
-    keys.sample if @eviction_strategy == :random
+    if @eviction_strategy == :random
+      evictable_key = @key_set.sample
+      @key_set.delete(evictable_key)
+    end
   end
 
   def push_list(key, value)
@@ -37,6 +44,10 @@ module Evictable
         prepend(new_node)
       end
     end
+
+    if @eviction_strategy == :random && !@key_set.include?(key)
+      @key_set << key
+    end    
   end
 
   def update_list(key)
