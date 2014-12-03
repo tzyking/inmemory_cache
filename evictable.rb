@@ -10,9 +10,7 @@ module Evictable
       @tail = ListNode.new
       @head.next_node = @tail
       @tail.pre_node = @head
-    end
-
-    if @eviction_strategy == :random
+    elsif @eviction_strategy == :random
       @key_set = Array.new
     end
   end
@@ -22,10 +20,8 @@ module Evictable
       evictable_node = @tail.pre_node
       remove(evictable_node)
       @data_map.delete(evictable_node.key)
-      return evictable_node.key
-    end
-    
-    if @eviction_strategy == :random
+      evictable_node.key
+    elsif @eviction_strategy == :random
       evictable_key = @key_set.sample
       @key_set.delete(evictable_key)
     end
@@ -43,9 +39,7 @@ module Evictable
         @data_map[key] = new_node
         prepend(new_node)
       end
-    end
-
-    if @eviction_strategy == :random && !@key_set.include?(key)
+    elsif @eviction_strategy == :random && !@key_set.include?(key)
       @key_set << key
     end    
   end
